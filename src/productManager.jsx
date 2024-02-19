@@ -1,6 +1,8 @@
 
 
 class ProductManager {
+
+
     
     #inicioId = 1
     #products
@@ -11,8 +13,9 @@ class ProductManager {
     #code
     #stock
 
-        constructor(){
-            
+        constructor(title, description, price, thumbnail, code, stock){
+            this.propiedadesProducts(title, description, price, thumbnail, code, stock);
+
             this.#products = []
         }
 
@@ -26,6 +29,7 @@ class ProductManager {
                 stock,
                 id: this.#getProdId()
             }
+            return this.#products.push(product)
         }
         
         #getProdId(){
@@ -49,7 +53,7 @@ class ProductManager {
         getStock(){return this.#stock}
 
         getProductById(num){
-            const identiId = this.#products.find(e => e.id === num )
+            return this.#products.find(e => e.id === num )
         }
         
         addProduct(CampCode){
@@ -71,7 +75,14 @@ class ProductManager {
             console.log("Se agrego el producto!!")
         }
 
-}
+    }
 
+const p = new ProductManager("title","Lorem2", 3000, "asdasd", 123, 2)
+console.log(`producto: ${p.getTitle()}`)
+
+const p2= new ProductManager("title", "Lorem2", 3000, "asdasd", 123, 2);
+
+// Accessing the getTitle() method after the instance is fully constructed
+console.log(`Product: ${p.getTitle()}`);
 
 export default ProductManager
