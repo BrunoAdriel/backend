@@ -19,7 +19,6 @@ class ProductManager {
             id: this.#getProdId()
         }
         this.#products.push(product)
-        console.log(product)
     }
     
     #getProdId(){
@@ -75,7 +74,8 @@ class ProductManager {
 }
 
 const p = new ProductManager("title","Lorem2", 3000, "asdasd", 123, 2)
-// const p2 = new ProductManager("title2","Lorem2", 300,"asdd",123, 1)
+const p2 = new ProductManager("title2","Lorem2", 300,"asdd",123, 1)
+console.log()
 console.log(`producto: ${p.getProducts()}`)
 // console.log(`se guardo ${p.addProduct()}`)
 // console.log(`se guardo ${p2.addProduct()}`)
