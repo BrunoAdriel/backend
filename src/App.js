@@ -1,4 +1,4 @@
-import ProductManager from './Components/productManager';
+import ProductManager from './productManager';
 import './App.css';
 
 function App() {
