@@ -1,7 +1,6 @@
 const fs = require('fs');
-const path = require('path');
 
-const fileProds = path.resolve(__dirname, './FileProducts.json');
+const fileProds = './FileProducts.json'; // Cambiar esto a una variable
 
 class ProductManager {
     static #ultimoId = 1;
@@ -13,7 +12,8 @@ class ProductManager {
 
     async addProduct(title, description, price, thumbnail, code, stock) {
         if (!title || !description || !price || !thumbnail || !code || stock === null) {
-            return console.log("Se encontraron datos vacíos, complételos para continuar!");        }
+            return console.log("Se encontraron datos vacíos, complételos para continuar!");        
+        }
 
         if (this.#products.some(product => product.code === code)) {
             return console.log("Este código ya existe!");
@@ -29,7 +29,9 @@ class ProductManager {
             id: this.#getProdId()
         };
 
-        this.#products.push(product);
+
+    
+            this.#products.push(product);
 
         try {
             await fs.promises.writeFile(fileProds, JSON.stringify(this.#products, null, '\t'));
@@ -79,18 +81,5 @@ const main = async() => {
 }
 
 main()
-
-// try{
-//     const p = new ProductManager();
-//     console.log( await p.readFile())
-    
-//     await p.addProduct("Title", "Description", 100, "thumbnail", 123, 10);
-// }catch{
-
-// }
-
-// const product = new ProductManager();
-// await product.addProduct("Title", "Description", 100, "thumbnail", 123, 10);
-// await product.readFile()
 
 export default ProductManager;
