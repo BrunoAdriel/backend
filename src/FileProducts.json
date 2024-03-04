@@ -1,3 +1,11 @@
-[ 
-    
+[
+	{
+		"title": "Title",
+		"description": "Description",
+		"price": 100,
+		"thumbnail": "thumbnail",
+		"code": 123,
+		"stock": 10,
+		"id": 1
+	}
 ]

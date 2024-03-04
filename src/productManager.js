@@ -6,8 +6,8 @@ class ProductManager {
     static #ultimoId = 1;
     #products;
 
-    constructor() {
-        this.#products = [];
+    async initialize(){
+        this.#products = await this.readFile()
     }
 
     async addProduct(title, description, price, thumbnail, code, stock) {
@@ -29,12 +29,10 @@ class ProductManager {
             id: this.#getProdId()
         };
 
-
-    
-            this.#products.push(product);
+        this.#products.push(product);
         
         try {
-            await fs.promises.writeFile(fileProds, JSON.stringify(this.#products, null, '\t'));
+            await this.#updateFile()
         } catch (err) {
             console.log("Error al guardar el documento:", err);
         }
@@ -65,34 +63,41 @@ class ProductManager {
             return "Product not found";
         }
         return product;
+    }   
+
+    async updateProduct(updateProd){
+        let prodFoundIdx = this.#products.findIndex(prod => prod.id === updateProd.id);
+        const prodData = { ...this.#products[prodFoundIdx], ...updateProd }
+        this.#products[prodFoundIdx] = prodData;
+
+        await this.#updateFile()
+        if(!updateProd){
+            return "Product not found";
+        }
+    }
+
+
+    async #updateFile() {
+        await fs.promises.writeFile(fileProds, JSON.stringify(this.#products, null, '\t'));
     }
 }
+
+
+module.exports = ProductManager;
 
 const main = async() => {
     try{
         const p = new ProductManager();
+        await p.initialize() // carga los usuarios de file
+
         console.log(await p.readFile());
         
         await p.addProduct("Title", "Description", 100, "thumbnail", 123, 10);
-        console.log(await p.readFile()); // Reading after adding the product
+        
+        console.log(await p.readFile());
     }catch(err){
         console.error(err);
     }
 }
 
-main()
-
-try{
-    const p = new ProductManager();
-    console.log( await p.readFile())
-    
-    await p.addProduct("Title", "Description", 100, "thumbnail", 123, 10);
-}catch{
-
-}
-
-// const product = new ProductManager();
-// await product.addProduct("Title", "Description", 100, "thumbnail", 123, 10);
-// await product.readFile()
-
-export default ProductManager;
+main();
