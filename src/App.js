@@ -2,6 +2,8 @@ const fs = require('fs')
 const express = require('express')
 
 const app = express()
+
+app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 app.get('/saludo',(req, res)=> {
@@ -36,6 +38,83 @@ app.get('/products/:pId', async (req, res) => {
       res.json(productFound);
     }
 });
+
+app.post('/products', async (req, res)=>{
+  // chekea que los campos esten completos, sino devuelve el error400
+  const requiredFields = ['title', 'description', 'price', 'thumbnail', 'code', 'stock'];
+  for (const field of requiredFields) {
+    if (!req.body[field]) {
+      return res.status(400).json({ status: 'error', message: `El campo '${field}' es obligatorio` });
+    }
+  }
+
+  const data = await fs.promises.readFile(__dirname + '/FileProducts.json', 'utf-8');
+  const products = JSON.parse(data);
+
+  const newProd = req.body;
+
+  // Asigna un nuevo ID al producto
+  const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+  newProd.id = newId;
+  products.push(newProd);
+
+  // Guarda el array actualizado de vuelta en el archivo
+  await fs.promises.writeFile(__dirname + '/FileProducts.json', JSON.stringify(products, null, 2));
+
+  res.json({ status: 'success', product: newProd });
+})
+
+app.put('/products/:pid', async (req, res)=>{
+  const data = await fs.promises.readFile(__dirname + '/FileProducts.json', 'utf-8');
+  let products = JSON.parse(data);
+  const prodId = parseInt(req.params.pid);
+  const prodData = req.body;
+  delete prodData.id;
+
+  const prodIdx = products.findIndex(product => product.id === prodId);
+
+  if (prodIdx < 0 ) {
+    return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
+  }
+
+  // Actualiza los datos del producto y aseguramos del id sea el mismo 
+  products[prodIdx] = { ...products[prodIdx], ...prodData, id:prodId };
+
+  // Guarda el array actualizado de vuelta en el archivo
+  await fs.promises.writeFile(__dirname + '/FileProducts.json', JSON.stringify(products, null, 2));
+
+  res.json({ status: 'success', product: products[prodIdx] });
+})
+
+app.delete('/products/:prodId', async (req, res)=>{
+  const data = await fs.promises.readFile(__dirname + '/FileProducts.json', 'utf-8');
+  let products = JSON.parse(data);
+  const prodId = parseInt(req.params.prodId);
+  const prodIdx = products.findIndex(product => product.id === prodId);
+
+  // Verifica si el producto con el ID especificado existe
+  if (prodIdx < 0) {
+    return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
+  }
+
+  // Elimina el producto del array
+  products.splice(prodIdx, 1);
+
+  // Guarda el array actualizado de vuelta en el archivo
+  await fs.promises.writeFile(__dirname + '/FileProducts.json', JSON.stringify(products, null, 2));
+
+  // Responde con un mensaje de éxito
+  res.json({ status: 'success', message: 'Producto eliminado correctamente' });
+
+
+  // if (prodIdx < 0 ) {
+  //   return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
+  // }
+
+  // products.splice(prodIdx, 1)
+  // res.json({ status: 'success', massage:"producto borrado" });
+
+})
 
 
 
