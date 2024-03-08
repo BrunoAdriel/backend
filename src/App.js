@@ -7,7 +7,7 @@ const app = express()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use('/api/carts/', prodCarro)
+app.use('/api/carts', prodCarro)
 
 app.get('/saludo',(req, res)=> {
   res.end('hola mundo desde express')
