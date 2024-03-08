@@ -1,10 +1,13 @@
 const fs = require('fs')
 const express = require('express')
 
+const prodCarro = require('./routes/prod.router')
+
 const app = express()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use('/api/carts/', prodCarro)
 
 app.get('/saludo',(req, res)=> {
   res.end('hola mundo desde express')
@@ -80,7 +83,6 @@ app.put('/products/:pid', async (req, res)=>{
   // Actualiza los datos del producto y aseguramos del id sea el mismo 
   products[prodIdx] = { ...products[prodIdx], ...prodData, id:prodId };
 
-  // Guarda el array actualizado de vuelta en el archivo
   await fs.promises.writeFile(__dirname + '/FileProducts.json', JSON.stringify(products, null, 2));
 
   res.json({ status: 'success', product: products[prodIdx] });
@@ -92,28 +94,16 @@ app.delete('/products/:prodId', async (req, res)=>{
   const prodId = parseInt(req.params.prodId);
   const prodIdx = products.findIndex(product => product.id === prodId);
 
-  // Verifica si el producto con el ID especificado existe
   if (prodIdx < 0) {
     return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
   }
 
-  // Elimina el producto del array
+  // Elimina el producto con la cantidad que ponga despues de la "," en esa posicion
   products.splice(prodIdx, 1);
 
-  // Guarda el array actualizado de vuelta en el archivo
   await fs.promises.writeFile(__dirname + '/FileProducts.json', JSON.stringify(products, null, 2));
-
-  // Responde con un mensaje de éxito
-  res.json({ status: 'success', message: 'Producto eliminado correctamente' });
-
-
-  // if (prodIdx < 0 ) {
-  //   return res.status(404).json({ status: 'error', message: 'Producto no encontrado' });
-  // }
-
-  // products.splice(prodIdx, 1)
-  // res.json({ status: 'success', massage:"producto borrado" });
-
+  
+  res.json({ status: 'success', message: 'Producto eliminado correctamente' })
 })
 
 
