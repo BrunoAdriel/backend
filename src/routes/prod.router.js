@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');  //utilizo la biblioteca "uuid" para poder generar el id
 
 
 const router = Router();
@@ -20,12 +21,16 @@ router.post('/', async (req, res) => {
     try {
       // Lee el carrito existente
       const carritoData = await fs.promises.readFile(__dirname + '/carrito.json', 'utf-8');
+
       carrito = JSON.parse(carritoData);
-    } catch (error) {
-      console.error('No se pudo leer el archivo carrito.json o no existe, creando uno nuevo.', error);
+      const carritoId = uuidv4();
       carrito = {
+        id: carritoId,
         products: []
       };
+    } catch (error) {
+
+      console.error('No se pudo leer el archivo carrito.json o no existe, creando uno nuevo.', error);
     }
 
     // Verificar si el carrito ya tiene productos
@@ -49,7 +54,7 @@ router.post('/', async (req, res) => {
     await fs.promises.writeFile(__dirname + '/carrito.json', JSON.stringify(carrito, null, 2));
 
     // Responder con el carrito actualizado
-    res.json({ status: 'success', carrito, id:Math.floor(Math.random() * 1000) }); //El id lo agrego aca ya que en el parametro del carrito no me lo agrega, json no llega :'(
+    res.json({ status: 'success', carrito}); //El id lo agrego aca ya que en el parametro del carrito no me lo agrega, json no llega :'(
   } catch (error) {
     console.error('Error al agregar producto al carrito:', error);
     res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
@@ -82,10 +87,12 @@ router.post('/:cid/product/:pid', async (req, res) => {
     // Leer el archivo del carrito
     const carritoData = await fs.promises.readFile(__dirname + '/carrito.json', 'utf-8');
     let carrito = JSON.parse(carritoData);
+    let carritoIndex;
 
     // Buscar el carrito con el ID especificado
-    const carritoIndex = carrito.findIndex(c => c.id === cid);
-    if (carritoIndex === -1) {
+    if (carrito.id === cid) {
+      carritoIndex = 0;
+    } else {
       return res.status(404).json({ status: 'error', message: 'Carrito no encontrado' });
     }
 
@@ -96,18 +103,25 @@ router.post('/:cid/product/:pid', async (req, res) => {
     };
 
     // Agregar el producto al arreglo "products" del carrito
-    carrito[carritoIndex].products.push(product);
+    if (carrito.products) {
+      carrito.products.push(product);
+    } else {
+      carrito.products = [product];
+    }
 
     // Guardar el carrito actualizado en el archivo
     await fs.promises.writeFile(__dirname + '/carrito.json', JSON.stringify(carrito, null, 2));
 
     // Responder con el carrito actualizado
-    res.json({ status: 'success', carrito: carrito[carritoIndex] });
+    res.json({ status: 'success', carrito });
   } catch (error) {
     console.error('Error al agregar producto al carrito:', error);
     res.status(500).json({ status: 'error', message: 'Error interno del servidor' });
   }
 });
+
+
+module.exports = router;
 
 // Ruta POST
 // router.post('/:cid/product/:pid', async (req, res)=>{
@@ -128,5 +142,3 @@ router.post('/:cid/product/:pid', async (req, res) => {
 //     res.json(products)
 //   }
 // })
-
-module.exports = router;
